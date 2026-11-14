@@ -174,7 +174,7 @@ class ReadyQueue {
     public void add(Process process) {
         queueLock.lock();
         try {
-            Thread thread = new Thread(process);
+            Thread thread = new thread(process);
             list.add(thread);
             map.put(thread, process);
 

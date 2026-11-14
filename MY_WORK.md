@@ -132,81 +132,148 @@
 
 ## Your Development Log
 
-### Entry 1 - [Date and Time]
+### Entry 1 - [14 november .2026.5:30pm]
 **What I did**:
-
+Examine the original CPU scheduling simulation and read the assignment instructions.
 **Details**:
+Examine the assignment's README and PDF.MD.
+
+To comprehend SharedStats, ReadyQueue, Process, and CpuWorker, I went over SchedulerSimulationSync.java.
+
+Put 445050050 as my real student ID.
+
+stored the results of running the initial starting code.
+
+Several CPUs were found to have chosen P1, resulting in an IllegalThreadStateException.
+
 
 **Challenges**:
+At first, I couldn't figure out why different CPUs chose the same method.
 
 **Solution**:
+I found the race condition between reading the first queue member and discarding it by looking into ReadyQueue.poll().
 
 **Time spent**:
-
+1h
 ---
 
 ### Entry 2 - [Date and Time]
 **What I did**:
+To safeguard the shared ready queue, I implemented Feature 1.
 
 **Details**:
+ReentrantLock was imported.
+
+queueLock was declared inside ReadyQueue.
+
+Add(), poll(), processOf(), and snapshot() are protected.
+
+Prior to accessing shared queue data, lock() was used.
+
+To ensure that the lock is released, use try/finally.
 
 **Challenges**:
+Due to the presence of both a HashMap and a LinkedList in the ready queue, both data structures must maintain their consistency throughout concurrent access.
+
 
 **Solution**:
-
+To safeguard both structures and stop several CPUs from accessing or changing them at the same time, I utilized a single ReentrantLock.
 **Time spent**:
-
+1h
 ---
 
 ### Entry 3 - [Date and Time]
 **What I did**:
+Feature 2 was put into practice to safeguard shared statistics.
 
 **Details**:
+found that the shared variables were contextSwitchCount, completedProcessCount, and totalServiceTime.
+
+Three distinct ReentrantLock objects were created.
+
+three update methods were protected.
+
+relevant getter methods.
+
+kept inside the critical protected sections.
 
 **Challenges**:
-
+I had to choose between using a single lock for all statistics and a different lock for each variable.
 **Solution**:
-
+Since the three statistics are independent, I chose one lock for each variable. 
 **Time spent**:
-
+1h
 ---
 
 ### Entry 4 - [Date and Time]
 **What I did**:
+Feature 3's counting semaphore was put into practice.
 
 **Details**:
+Java.util.concurrent.Semaphore was imported.
+
+set the ready queue semaphore's initial value to zero.
+
+After adding a process to the ready queue, release() was added.
+
+Acquire() was used to add awaitReady().
+
+examined the relationship between available processes and semaphore permits.
+
 
 **Challenges**:
+At first, I didn't understand why the semaphore should begin at zero.
 
-**Solution**:
+**Solution**:I discovered that the semaphore starts at zero and gets one permit each time a process is added because the ready queue is initially empty.
 
-**Time spent**:
+**Time spent**: 1h
 
 ---
 
 ### Entry 5 - [Date and Time]
-**What I did**:
+**What I did**: CPU waiting was updated, and graceful shutdown was introduced.
 
 **Details**:
+used a blocking semaphore wait in place of the repeated polling method.
+
+used thread and thread.start() to maintain the original process execution logic.join().
+
+To awaken CPUs that were waiting on the semaphore, a shutdown signal was added.
+
+After a CPU is granted a permit, a termination check is added.
+
+verified that the CPU workers could stop working once every process was completed.
 
 **Challenges**:
+Preventing CPUs from staying blocked after the final process finished was the primary challenge.
 
 **Solution**:
+In order to awaken the waiting CPUs and enable them to verify the completion condition, I added a shutdown method that releases enough semaphore permits.
 
 **Time spent**:
-
+1h
 ---
 
 ### Entry 6 - [Optional - Date and Time]
-**What I did**:
+**What I did**:The synchronization implementation was tested and examined.
 
 **Details**:
+compiled and ran the revised Java application.
 
-**Challenges**:
+examined the total service time, the number of context switches, and the number of completed processes.
 
-**Solution**:
+verified that there were no busy-waiting polls.
 
-**Time spent**:
+examined the results of the verification.
+
+compared the final implementation to the initial starter output.
+
+
+**Challenges**:I had to make sure the synchronization solution didn't cause a deadlock or keep a CPU waiting indefinitely.
+
+**Solution**:I ran the program several times, checking the verification block each time.
+
+**Time spent**: 1h
 
 ---
 
@@ -240,7 +307,8 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+[I discovered that when several threads access shared resources simultaneously, synchronization is crucial. When two threads read and update the same variable without adequate protection, a race condition may occur. To ensure mutual exclusion and safeguard important portions of the ready queue and shared statistics, I employed ReentrantLock. Additionally, I discovered that try/finally guaranties that a lock is released even in the event that an exception interrupts an operation. By enabling CPUs to block until a process becomes available, the counting semaphore assisted in replacing busy waiting. The fact that the original program permitted multiple CPUs to choose the same process, resulting in an IllegalThreadStateException, shocked me the most.
+]
 
 ## Question 2: What was the most challenging part of this assignment?
 
@@ -248,7 +316,7 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+[Implementing the semaphore shutdown mechanism was the most difficult aspect of this assignment. I initially grasped how acquire() blocks a CPU when the ready queue is empty, but I struggled to comprehend how the waiting CPUs ought to end. No new process will be added to the queue once the previous one is completed. As a result, CPUs that are awaiting the semaphore may be blocked indefinitely. In order to resolve this, I added a shutdown method that releases permissions to awaken the CPUs that were waiting. This section made it clearer to me that synchronization necessitates managing both regular program execution and program termination.]
 
 ## Question 3: How did you overcome the challenges you faced?
 
@@ -256,7 +324,7 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+By breaking the assignment up into three distinct features and working on each one gradually, I was able to overcome the difficulties. To find the race conditions, I first looked at the original code and the output. Next, I protected the shared statistics and the ready queue using ReentrantLock. I then put the semaphore into practice and used blocking synchronization in place of the busy-waiting mechanism. In order to find any potential mistakes, I also examined the README.md and tested the program after making modifications. In order to confirm that the shared values matched the expected values, I lastly reviewed the verification results.]
 
 ## Question 4: Where can synchronization concepts be applied in real-world applications?
 
@@ -264,7 +332,7 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+[In many real-world applications that enable multiple users or processes to access shared resources, synchronization is crucial. Locks in banking systems can stop two transactions from updating the same account balance in the wrong way. Synchronization stops two customers from booking the same seat at the same time when purchasing tickets online. Locks in databases preserve data consistency and safeguard shared records during updates. Access to a restricted set of resources, like printers or open connections, can also be managed with a semaphore. Because multiple threads need to coordinate their access to shared resources, these examples are comparable to my CPU scheduling project.]
 
 ### Optional: What would you like to learn more about?
 
@@ -298,7 +366,7 @@
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+[When several CPUs accessed the shared ready queue without mutual exclusion, the original starter created a race condition. CPU-1, CPU-4, CPU-2, and CPU-3 all chose P1 in my output, resulting in an IllegalThreadStateException. While busy-waiting polls reached 704, the verification revealed 17 context switches instead of 22, 8 finished processes instead of 10, and 41766 ms instead of 53100 ms. One increment could be lost, for instance, if CPU-1 and CPU-2 both read contextSwitchCount as 12, pause, and then write 13. Even without RaceWindow, thread execution can be interrupted between reading and writing, which can cause the same issue on actual machines.pause().]
 
 Verification block of the **original starter**:
 ```
@@ -321,7 +389,7 @@ Verification block of **my final version**:
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+[I used a single ReentrantLock called queueLock to safeguard the ready queue operations, protecting both the HashMap and LinkedList. I protected contextSwitchCount, completedProcessCount, and totalServiceTime for the shared statistics using three different locks. Although it necessitates managing additional locks, this design enables independent statistics to be updated without needlessly blocking each other. Because the ready queue safeguards a different shared resource from the statistics, it employs a different lock. The default non-fair ReentrantLock does not ensure bounded waiting or prevent starvation, but these locks offer mutual exclusion and permit other threads to advance when a lock becomes available.]
 
 | Critical section (variable / method) | Lock used | Why it needs protection |
 |---|---|---|
@@ -336,7 +404,7 @@ Verification block of **my final version**:
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+[Busy waiting and needless CPU activity resulted from the original starter's CPUs constantly checking the ready queue and sleeping for 20 milliseconds when it was empty. 704 busy-waiting polls were recorded in my initial output. Since the queue is initially empty, the counting semaphore, which in the final implementation represents the number of available processes in the ready queue, begins at zero. Assuming one release for each successful initial insertion and prior to any CPU obtaining a permit, its value increases to 10 after the first 10 processes are added. When all processes are completed, the final CPU releases totalCPUs permits to awaken waiting CPUs, as otherwise they might remain blocked indefinitely.]
 
 ## Question 4: Classical Problems and Deadlock
 
@@ -345,7 +413,7 @@ Verification block of **my final version**:
 > 💡 **TIP:** Recall the bounded-buffer solution of the slides (`empty`, `full`, `mutex`) and the order of `wait()` calls in the producer and the consumer. For the deadlock, think about a producer that holds the mutex while waiting for a free slot that only a consumer (who needs the mutex) can create.
 
 **Your Answer:** *(3-5 sentences)*
-
+The ready queue is similar to the classical Producer-Consumer problem, also known as the bounded-buffer problem. The main thread acts as an initial producer, while CPUs act as consumers when removing processes and also as producers when re-enqueuing unfinished processes. For a bounded queue with capacity K, the three semaphores are empty initialized to K, full initialized to 0, and mutex initialized to 1. A deadlock could occur if a producer acquires the mutex and then waits for an empty slot while a consumer needs the same mutex to remove an item and release an empty slot. This can be prevented by breaking the hold-and-wait condition, for example by waiting for an available slot before acquiring the mutex.
 **Classical problem and roles**:
 [Name the problem; who is the producer, who is the consumer?]
 
