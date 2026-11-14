@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 // TODO (Feature 1 and Feature 2): import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -159,10 +160,17 @@ class ReadyQueue {
     // TODO Feature 1: declare the lock protecting `list` and `map` here
     private final ReentrantLock queueLock = new ReentrantLock(); // protectsing the queue list and process map
     // TODO Feature 3: declare the counting semaphore that counts the processes
+    private final Semaphore queueSemaphore = new Semaphore(0);
+    private boolean shutdownsignaled = false;
     // waiting in the ready queue here
+    // initially empty
 
     // Add a process to the ready queue (new process, or a process that did not
     // finish its quantum)
+    // // TODO Feature 3: signal that one more process is available in the queue
+    // (increment the semaphore)
+    readyCount.release();
+
     public void add(Process process) {
         queueLock.lock();
         try {
@@ -200,18 +208,18 @@ class ReadyQueue {
 
 }
 
-public Process processOf(Thread thread) {
-    // TODO Feature 1: protect this access
-    queueLock.lock();
-    try {
-        return map.get(thread);
-    } finally {
-        queueLock.unlock();
+    public Process processOf(Thread thread) {
+        // TODO Feature 1: protect this access
+        queueLock.lock();
+        try {
+            return map.get(thread);
+        } finally {
+            queueLock.unlock();
+        }
     }
-}
 
-// Names of the processes currently waiting in the queue (used to display the
-// ready queue)
+    // Names of the processes currently waiting in the queue (used to display the
+    // ready queue)
 public String snapshot() {
     // TODO Feature 1: protect this critical section
     queueLock.lock();
@@ -228,7 +236,22 @@ public String snapshot() {
     } finally {
         queueLock.unlock();
     }
+
+    public void awaitReady() throws InterruptedException {
+    readyCount.acquire();
 }
+
+public void signalShutdown() {
+    queueLock.lock();
+    try {
+        if (!shutdownsignaled) {
+            shutdownsignaled = true;
+            readyCount.release(SharedStats.totalCPUs); // wake up all waiting CPUs
+        }finally {
+            queueLock.unlock();
+        }
+}
+
 
 // Class representing a process (same as Assignment 1) - executes ONE time
 // quantum per thread start
@@ -355,19 +378,16 @@ class CpuWorker extends Thread {
 
             // TODO Feature 3: replace this polling loop by a blocking wait on the counting
             // semaphore
+              try {
+            readyQueue.awaitReady();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
             Thread thread = readyQueue.poll();
             if (thread == null) {
-                // ⚠️ BUSY WAITING: the CPU keeps checking an empty queue instead of sleeping
-                // until
-                // a process is available. It wastes CPU time and needs the "completed == total"
-                // test above to stop.
-                SharedStats.busyWaitPolls.incrementAndGet(); // (counted for the verification block)
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    return;
-                }
-                continue;
+                return; 
+          
             }
 
             Process process = readyQueue.processOf(thread);
@@ -390,17 +410,21 @@ class CpuWorker extends Thread {
             // TODO Feature 3: when the LAST process has completed, wake up the CPUs that
             // are blocked on the
             // semaphore so that they can terminate (otherwise they would wait forever!)
+             if (SharedStats.getCompletedProcessCount() == SharedStats.totalProcesses) {
+            readyQueue.signalShutdown();
         }
     }
-}
+        }
+    }
+
 
 public class SchedulerSimulationSync {
     public static void main(String[] args) {
         // ⚠️ IMPORTANT: Put your student ID here to seed the random number generator
         // This makes your output unique to you - DO NOT forget to change this!
-        int studentID = 445050050; // ← CHANGE THIS TO YOUR ACTUAL STUDENT ID
-
+        int studentID = ''(445050050)''; // TODO: replace with your student ID
         Random random = new Random(studentID);
+
 
         // Same random values as Assignment 1 (quantum, number of processes and burst
         // times)
