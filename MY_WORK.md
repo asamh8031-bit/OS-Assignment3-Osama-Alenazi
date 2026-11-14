@@ -32,17 +32,17 @@
 
 | Field | Your Answer |
 |-------|-------------|
-| **Full Name** | [Write your full name here] |
-| **Student ID** | [Write your student ID here] |
-| **University Email** | [yourid]@std.psau.edu.sa |
-| **GitHub Username** | [your-github-username] |
-| **Repository Link** | [Paste your repository link here] |
+| **Full Name** | [osama abd alwahab alenazi] |
+| **Student ID** | [445050050] |
+| **University Email** | [445050050]@std.psau.edu.sa |
+| **GitHub Username** | [asamh8031-bit] |
+| **Repository Link** | [https://github.com/asamh8031-bit/OS-Assignment3-Osama-Alenazi.git] |
  
 ---
 
 ## 🎥 Video Link
 
-**Video Link**: [Paste your video link here]
+**Video Link**: [https://drive.google.com/file/d/1Cr__oMW5azuvhuDbXbsiHaNWT3QaY8yT/view?usp=drive_link]
 
 > ⚠️ **WARNING:** The video must be **publicly accessible** ("Anyone with the link can view") on **Google Drive**, **YouTube (Unlisted or Public)** or any other cloud file-sharing system. A private, restricted or broken link counts as a **missing video (-1 mark)**.
 >
